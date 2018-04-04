@@ -72,30 +72,40 @@ namespace DeliveryUnziper
 
             using (var archive = ZipArchive.Open(fi, ro))
             {
-                //File毎で解凍
-                string innerBaseFold = archive.Entries.FirstOrDefault().Key;
+                ////File毎で解凍
+                //string innerBaseFold = archive.Entries.FirstOrDefault().Key;
 
-                foreach (var entry in archive.Entries)
+                //foreach (var entry in archive.Entries)
+                //{
+                //    if (entry.Key == innerBaseFold)
+                //    {
+                //        continue;
+                //    }
+                //    string DestinationFileName = entry.Key.Replace(innerBaseFold, string.Empty);
+                //    DestinationFileName = Path.Combine(OutBasePath, DestinationFileName);
+
+                //    if (entry.IsDirectory)
+                //    {
+                //        Directory.CreateDirectory(DestinationFileName);
+                //    }
+                //    else
+                //    {
+
+                //        entry.WriteToFile(DestinationFileName, new ExtractionOptions()
+                //        {
+                //            Overwrite = true
+                //        });
+                //    }
+                //}
+
+                //マルチ解凍
+                foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
                 {
-                    if (entry.Key == innerBaseFold)
+                    entry.WriteToDirectory(OutBasePath, new ExtractionOptions()
                     {
-                        continue;
-                    }
-                    string DestinationFileName = entry.Key.Replace(innerBaseFold, string.Empty);
-                    DestinationFileName = Path.Combine(OutBasePath, DestinationFileName);
-
-                    if (entry.IsDirectory)
-                    {
-                        Directory.CreateDirectory(DestinationFileName);
-                    }
-                    else
-                    {
-
-                        entry.WriteToFile(DestinationFileName, new ExtractionOptions()
-                        {
-                            Overwrite = true
-                        });
-                    }
+                        ExtractFullPath = true,
+                        Overwrite = true
+                    });
                 }
             }
         }
@@ -113,35 +123,45 @@ namespace DeliveryUnziper
 
             using (var archive = RarArchive.Open(fi,ro))
             {
-                //File毎で解凍
+                ////File毎で解凍
 
-                //Rar専用ロジック①Entry List　Reverse
-                IEnumerable<IArchiveEntry> entries = archive.Entries.Reverse();
+                ////Rar専用ロジック①Entry List　Reverse
+                //IEnumerable<IArchiveEntry> entries = archive.Entries.Reverse();
 
-                string innerBaseFold = entries.FirstOrDefault().Key;
-                foreach (var entry in entries)
+                //string innerBaseFold = entries.FirstOrDefault().Key;
+                //foreach (var entry in entries)
+                //{
+                //    if (entry.Key == innerBaseFold)
+                //    {
+                //        continue;
+                //    }
+
+                //    //Rar専用ロジック②Entry.Key
+                //    string DestinationFileName = entry.Key.Replace(String.Format("{0}\\",innerBaseFold), string.Empty);
+                //    DestinationFileName = Path.Combine(OutBasePath, DestinationFileName);
+
+                //    if (entry.IsDirectory)
+                //    {
+                //        Directory.CreateDirectory(DestinationFileName);
+                //    }
+                //    else
+                //    {
+
+                //        entry.WriteToFile(DestinationFileName, new ExtractionOptions()
+                //        {
+                //            Overwrite = true
+                //        });
+                //    }
+                //}
+
+                //マルチ解凍
+                foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
                 {
-                    if (entry.Key == innerBaseFold)
+                    entry.WriteToDirectory(OutBasePath, new ExtractionOptions()
                     {
-                        continue;
-                    }
-
-                    //Rar専用ロジック②Entry.Key
-                    string DestinationFileName = entry.Key.Replace(String.Format("{0}\\",innerBaseFold), string.Empty);
-                    DestinationFileName = Path.Combine(OutBasePath, DestinationFileName);
-
-                    if (entry.IsDirectory)
-                    {
-                        Directory.CreateDirectory(DestinationFileName);
-                    }
-                    else
-                    {
-
-                        entry.WriteToFile(DestinationFileName, new ExtractionOptions()
-                        {
-                            Overwrite = true
-                        });
-                    }
+                        ExtractFullPath = true,
+                        Overwrite = true
+                    });
                 }
             }
         }
