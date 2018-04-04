@@ -22,24 +22,88 @@ namespace DeliveryUnziper
             Console.WriteLine("========================================");
             try
             {
-                string CompressFileName = args[0];
-#if DEBUG
-                CompressFileName = @"C:\DeliveryUnziper\test\20180403_＜納品＞ECT_得意先向け在庫表発行（任意先）No_3496.rar";
-#endif 
-                FileInfo fi = new FileInfo(CompressFileName);
-                switch (fi.Extension.ToLower())
+
+                #region 複数ファイル解凍
+
+                //パラメータ整理（パスやファイル名にspaceがある場合）
+                List<string> CompressFileName = new List<string>();
+                string strPartName = string.Empty;
+
+                foreach (var strZipFileName in args)
                 {
-                    case ".zip":
-                        ExtractFilesZip(fi);
-                        break;
-                    case ".rar":
-                        ExtractFilesRar(fi);
-                        break;
-                    default:
-                        throw new Exception("無効な圧縮ファイルです。ご確認のほど、お願いいたします。");
+                    if (strZipFileName.ToLower().Contains(".zip") || strZipFileName.ToLower().Contains(".rar"))
+                    {
+                        CompressFileName.Add(strPartName +" "+ strZipFileName);
+                        strPartName = string.Empty;
+                    }
+                    else {
+                        strPartName = strPartName + " " + strZipFileName;
+                    }
+
                 }
 
-                File.Delete(CompressFileName);
+                int index = 1;                
+
+                foreach (var strZipFileName in CompressFileName)
+                {
+
+                    Console.WriteLine("arg[{0}]:{1}", index, strZipFileName);
+
+
+                    FileInfo fi = new FileInfo(strZipFileName);
+
+                    Console.WriteLine("---{0}---", index);
+                    Console.WriteLine("DirectoryName:{0}", fi.DirectoryName);
+                    Console.WriteLine("FileName:{0}", fi.Name);
+                    Console.WriteLine("Extension:{0}", fi.Extension);
+
+                    switch (fi.Extension.ToLower())
+                    {
+                        case ".zip":
+                            ExtractFilesZip(fi);
+                            break;
+                        case ".rar":
+                            ExtractFilesRar(fi);
+                            break;
+                        default:
+                            throw new Exception("無効な圧縮ファイルです。ご確認のほど、お願いいたします。");
+                    }
+
+                    File.Delete(fi.FullName);
+
+                    index++;
+
+                }
+                #endregion
+
+                #region 単一ファイル解凍
+                //#if DEBUG
+                //                string strZipFileName = args[0];
+
+                //                strZipFileName = @"C:\DeliveryUnziper\test\MPP Viewer Beta 4.0.zip";
+
+                //                FileInfo fi = new FileInfo(strZipFileName);
+
+                //                Console.WriteLine("DirectoryName:{0}", fi.DirectoryName);
+                //                Console.WriteLine("FileName:{0}", fi.Name);
+                //                Console.WriteLine("Extension:{0}", fi.Extension);
+
+                //                switch (fi.Extension.ToLower())
+                //                {
+                //                    case ".zip":
+                //                        ExtractFilesZip(fi);
+                //                        break;
+                //                    case ".rar":
+                //                        ExtractFilesRar(fi);
+                //                        break;
+                //                    default:
+                //                        throw new Exception("無効な圧縮ファイルです。ご確認のほど、お願いいたします。");
+                //                }
+
+                //                File.Delete(fi.FullName);
+                //#endif
+                #endregion
+
                 Console.WriteLine("========================================");
                 Console.WriteLine("納品物の解凍を正常終了しました。");
  #if DEBUG
@@ -58,10 +122,6 @@ namespace DeliveryUnziper
 
         private static void ExtractFilesZip(FileInfo fi)
         {
-
-            Console.WriteLine("DirectoryName:{0}", fi.DirectoryName);
-            Console.WriteLine("FileName:{0}", fi.Name);
-            Console.WriteLine("Extension:{0}", fi.Extension);
 
 
             string OutBasePath = fi.DirectoryName;
@@ -111,10 +171,6 @@ namespace DeliveryUnziper
         }
         private static void ExtractFilesRar(FileInfo fi)
         {
-            Console.WriteLine("DirectoryName:{0}", fi.DirectoryName);
-            Console.WriteLine("FileName:{0}", fi.Name);
-            Console.WriteLine("Extension:{0}", fi.Extension);
-
 
             string OutBasePath = fi.DirectoryName;
 
