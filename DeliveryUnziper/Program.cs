@@ -11,6 +11,7 @@ using SharpCompress.Readers;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using System.IO;
+using System.Configuration;
 
 namespace DeliveryUnziper
 {
@@ -22,87 +23,17 @@ namespace DeliveryUnziper
             Console.WriteLine("========================================");
             try
             {
-
-                #region 複数ファイル解凍
-
-                //パラメータ整理（パスやファイル名にspaceがある場合）
-                List<string> CompressFileName = new List<string>();
-                string strPartName = string.Empty;
-
-                foreach (var strZipFileName in args)
-                {
-                    if (strZipFileName.ToLower().Contains(".zip") || strZipFileName.ToLower().Contains(".rar"))
-                    {
-                        CompressFileName.Add(strPartName +" "+ strZipFileName);
-                        strPartName = string.Empty;
-                    }
-                    else {
-                        strPartName = strPartName + " " + strZipFileName;
-                    }
-
+                switch(args.Count()) {
+                    case 0:
+                        UpzipFolder();
+                        break;
+                    case 1:
+                        UpzipSingle(new FileInfo(args[0]));
+                        break;
+                    default:
+                        UnzipMultiple(args);
+                        break;
                 }
-
-                int index = 1;                
-
-                foreach (var strZipFileName in CompressFileName)
-                {
-
-                    Console.WriteLine("arg[{0}]:{1}", index, strZipFileName);
-
-
-                    FileInfo fi = new FileInfo(strZipFileName);
-
-                    Console.WriteLine("---{0}---", index);
-                    Console.WriteLine("DirectoryName:{0}", fi.DirectoryName);
-                    Console.WriteLine("FileName:{0}", fi.Name);
-                    Console.WriteLine("Extension:{0}", fi.Extension);
-
-                    switch (fi.Extension.ToLower())
-                    {
-                        case ".zip":
-                            ExtractFilesZip(fi);
-                            break;
-                        case ".rar":
-                            ExtractFilesRar(fi);
-                            break;
-                        default:
-                            throw new Exception("無効な圧縮ファイルです。ご確認のほど、お願いいたします。");
-                    }
-
-                    File.Delete(fi.FullName);
-
-                    index++;
-
-                }
-                #endregion
-
-                #region 単一ファイル解凍
-                //#if DEBUG
-                //                string strZipFileName = args[0];
-
-                //                strZipFileName = @"C:\DeliveryUnziper\test\MPP Viewer Beta 4.0.zip";
-
-                //                FileInfo fi = new FileInfo(strZipFileName);
-
-                //                Console.WriteLine("DirectoryName:{0}", fi.DirectoryName);
-                //                Console.WriteLine("FileName:{0}", fi.Name);
-                //                Console.WriteLine("Extension:{0}", fi.Extension);
-
-                //                switch (fi.Extension.ToLower())
-                //                {
-                //                    case ".zip":
-                //                        ExtractFilesZip(fi);
-                //                        break;
-                //                    case ".rar":
-                //                        ExtractFilesRar(fi);
-                //                        break;
-                //                    default:
-                //                        throw new Exception("無効な圧縮ファイルです。ご確認のほど、お願いいたします。");
-                //                }
-
-                //                File.Delete(fi.FullName);
-                //#endif
-                #endregion
 
                 Console.WriteLine("========================================");
                 Console.WriteLine("納品物の解凍を正常終了しました。");
@@ -118,6 +49,90 @@ namespace DeliveryUnziper
                 Console.ReadLine();
             }
 
+        }
+        private static void UpzipFolder() {
+            var appSettings = ConfigurationManager.AppSettings;
+            string checkPath = appSettings["CheckFolder"];
+            string[] files = System.IO.Directory.GetFiles(checkPath, "*", System.IO.SearchOption.TopDirectoryOnly);
+            foreach (var strZipFileName in files)
+            {
+                Console.WriteLine(strZipFileName);
+                FileInfo fi = new FileInfo(strZipFileName);
+                string extension = fi.Extension.ToLower();
+
+                if ((extension == ".zip") || (extension == ".rar"))
+                {
+                    UpzipSingle(fi);
+                }
+            }
+        }
+
+        private static void UpzipSingle(FileInfo fi) {
+            #region 単一ファイル解凍
+
+                            Console.WriteLine("DirectoryName:{0}", fi.DirectoryName);
+                            Console.WriteLine("FileName:{0}", fi.Name);
+                            Console.WriteLine("Extension:{0}", fi.Extension);
+
+                            switch (fi.Extension.ToLower())
+                            {
+                                case ".zip":
+                                    ExtractFilesZip(fi);
+                                    break;
+                                case ".rar":
+                                    ExtractFilesRar(fi);
+                                    break;
+                                default:
+                                    throw new Exception("無効な圧縮ファイルです。ご確認のほど、お願いいたします。");
+                            }
+
+                            File.Delete(fi.FullName);
+            #endregion
+        }
+        private static void UnzipMultiple(string[] args) {
+
+            #region 複数ファイル解凍
+
+            //パラメータ整理（パスやファイル名にspaceがある場合）
+            List<string> CompressFileName = new List<string>();
+            string strPartName = string.Empty;
+
+            foreach (var strZipFileName in args)
+            {
+                if (strZipFileName.ToLower().Contains(".zip") || strZipFileName.ToLower().Contains(".rar"))
+                {
+                    CompressFileName.Add(strPartName + " " + strZipFileName);
+                    strPartName = string.Empty;
+                }
+                else
+                {
+                    strPartName = strPartName + " " + strZipFileName;
+                }
+
+            }
+
+            int index = 1;
+
+            foreach (var strZipFileName in CompressFileName)
+            {
+
+                Console.WriteLine("arg[{0}]:{1}", index, strZipFileName);
+
+                 FileInfo fi = new FileInfo(strZipFileName);
+
+                string extension = fi.Extension.ToLower();
+
+                if ((extension == ".zip") || (extension == ".rar"))
+                {
+                    UpzipSingle(fi);
+                }
+
+                UpzipSingle(fi);
+
+                index++;
+
+            }
+            #endregion
         }
 
         private static void ExtractFilesZip(FileInfo fi)
