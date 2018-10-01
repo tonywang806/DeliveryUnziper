@@ -146,6 +146,7 @@ namespace DeliveryUnziper
 
             ReaderOptions ro = new ReaderOptions();
             ro.ArchiveEncoding.Default = Encoding.GetEncoding(932);
+            
 
 
             using (var archive = ZipArchive.Open(fi, ro))
@@ -234,6 +235,7 @@ namespace DeliveryUnziper
                     entry.WriteToDirectory(OutBasePath, new ExtractionOptions()
                     {
                         ExtractFullPath = true,
+                        PreserveFileTime=true,
                         Overwrite = true
                     });
                 }
